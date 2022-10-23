@@ -1,5 +1,7 @@
 import React from 'react'
 
+import Router from 'next/router'
+
 import { useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
@@ -36,10 +38,10 @@ const TodoForm = (props) => {
       })
       const result = await response.json()
       reset()
-      window.location.reload()
+      await Router.push('/')
       return result
     } catch (error) {
-      console.error(error)
+      return { error: 'Oh, something went wrong' }
     }
   }
 

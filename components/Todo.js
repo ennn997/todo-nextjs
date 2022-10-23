@@ -1,11 +1,13 @@
 import React from 'react'
 
+import Router from 'next/router'
+
 import { HStack, Button, Text } from '@chakra-ui/react'
+
 import '@fontsource/roboto-slab'
 
 const Todo = (props) => {
   const handleRemoveTodo = async () => {
-    setIsLoading(true)
     const { id } = props
     try {
       const response = await fetch(`/api/${id}`, {
@@ -16,10 +18,10 @@ const Todo = (props) => {
         body: JSON.stringify({ id: id }),
       })
       const result = await response.json()
-      window.location.reload()
+      await Router.push('/')
       return result
     } catch (error) {
-      console.error(error)
+      return { error: 'Oh, something went wrong' }
     }
   }
 
