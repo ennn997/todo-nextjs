@@ -7,9 +7,11 @@ export default async function (req, res) {
 
     try {
       const todo = await prisma.todo.delete({ where: { id: todoId } })
-      return res.status(200).json(todo)
+      res.status(200).json(todo)
     } catch (error) {
       res.status(500).json({ error: 'Error' })
     }
+  } else {
+    res.status(404)
   }
 }

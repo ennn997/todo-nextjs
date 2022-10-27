@@ -1,26 +1,34 @@
 import Head from 'next/head'
 
 import TodoForm from '../components/TodoForm'
+import { server } from '../config/index'
 
-import prisma from '../lib/prisma'
+import { QueryClient, dehydrate } from '@tanstack/react-query'
 
-const Home = (props) => {
+const Home = () => {
   return (
     <>
       <Head>
         <title>To-Do List</title>
       </Head>
-      <TodoForm todos={props.todos} />
+      <TodoForm />
     </>
   )
 }
 
-export const getServerSideProps = async () => {
-  const todos = await prisma.todo.findMany()
-
-  return {
-    props: { todos },
+export const getTodos = async () => {
+  const response = await fetch(`${server}/api/`)
+  if (response.ok) {
+    return response.json()
+  } else {
+    throw new Error('Network response not ok!')
   }
+}
+
+export const getServerSideProps = async () => {
+  const queryClient = new QueryClient()
+  await queryClient.prefetchQuery(['todos'], getTodos)
+  return { props: { dehydratedState: dehydrate(queryClient) } }
 }
 
 export default Home

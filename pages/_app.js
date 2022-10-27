@@ -1,20 +1,22 @@
-import { ChakraProvider, extendTheme } from '@chakra-ui/react'
+import { ChakraProvider } from '@chakra-ui/react'
 
-const customTheme = extendTheme({
-  styles: {
-    global: {
-      'html, body': {
-        bg: 'linear-gradient(to right, #bf80ff 0%, #cc99ff 19%, #d9b3ff 60%, #e6ccff 100%)',
-      },
-    },
-  },
-})
+import { customTheme } from '../styles/theme'
+
+import { QueryClientProvider, QueryClient, Hydrate } from '@tanstack/react-query'
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+
+const queryClient = new QueryClient()
 
 function MyApp({ Component, pageProps }) {
   return (
-    <ChakraProvider theme={customTheme}>
-      <Component {...pageProps} />
-    </ChakraProvider>
+    <QueryClientProvider client={queryClient}>
+      <Hydrate state={pageProps.dehydratedState}>
+        <ChakraProvider theme={customTheme}>
+          <Component {...pageProps} />
+          <ReactQueryDevtools initialIsOpen="false" position="bottom-right" />
+        </ChakraProvider>
+      </Hydrate>
+    </QueryClientProvider>
   )
 }
 

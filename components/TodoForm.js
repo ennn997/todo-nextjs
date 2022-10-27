@@ -1,14 +1,12 @@
 import React from 'react'
 
-import Router from 'next/router'
-
 import { useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
 
-import { Input, Box, Heading, Center, HStack, Text, Button } from '@chakra-ui/react'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 
-import '@fontsource/roboto-slab'
+import { Input, Box, Heading, Center, HStack, Text, Button, CircularProgress } from '@chakra-ui/react'
 
 import TodoList from './TodoList'
 
@@ -19,7 +17,7 @@ const schema = yup
   })
   .required()
 
-const TodoForm = (props) => {
+const TodoForm = () => {
   const {
     register,
     handleSubmit,
@@ -27,64 +25,70 @@ const TodoForm = (props) => {
     formState: { errors },
   } = useForm({ resolver: yupResolver(schema) })
 
-  const onSubmitForm = async (todoTask) => {
-    try {
-      const response = await fetch(`/api/`, {
+  const queryClient = useQueryClient()
+
+  const { mutate, isLoading, isError } = useMutation(
+    async (todoTask) => {
+      const response = await fetch('/api/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(todoTask),
       })
+      if (!response.ok) {
+        throw new Error('Oh no, something went wrong!')
+      }
       const result = await response.json()
-      reset()
-      await Router.push('/')
-      return result
-    } catch (error) {
-      return { error: 'Oh, something went wrong' }
+    },
+
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['todos'])
+      },
+
+      onError: (error, newData, rollback) => rollback(),
     }
-  }
+  )
+
+  if (isError)
+    return (
+      <Text marginTop="50vh" align="center">
+        Oops, something went wrong!!
+      </Text>
+    )
+
+  const onSubmit = handleSubmit((data) => mutate(data, { onSuccess: () => reset() }))
 
   return (
     <Center>
       <Box
         bg="white"
         maxWidth={['300px', '990px']}
-        p={5}
+        p="25px"
         ml="auto"
         mr="auto"
         mt="90px"
         borderWidth="1px"
         borderRadius=" 16px"
         boxShadow="0 20px 80px rgba(0,0,0,0.4)"
-        fontFamily={'Roboto slab, sans-serif'}
       >
-        <Heading fontSize="32px" align="center" fontFamily={'Roboto slab'}>
+        <Heading variant="h1" align="center">
           My To-Do List!
         </Heading>
 
-        <form onSubmit={handleSubmit(onSubmitForm)}>
+        <form onSubmit={onSubmit}>
           <HStack mt="80px" spacing="34px" direction="row">
             <Input
               borderRadius="16px"
               maxWidth={['220px', '350px']}
               placeholder="Add new To-Do"
-              fontFamily={'Roboto slab, sans-serif'}
-              fontSize="17px"
               {...register('todoTask')}
             />
 
-            <Button
-              colorScheme="white"
-              width={'90px'}
-              borderWidth="1px"
-              borderRadius=" 16px"
-              color="blackAlpha.900"
-              fontSize="17px"
-            >
-              Add
-            </Button>
+            <Button variant="Button">Add</Button>
           </HStack>
+
           {errors.todoTask ? (
             <Text color="red" ml="10px">
               Please write some To-Do!
@@ -92,7 +96,19 @@ const TodoForm = (props) => {
           ) : null}
         </form>
 
-        <TodoList todos={props.todos} />
+        {isLoading ? (
+          <CircularProgress
+            isIndeterminate
+            color="purple.300"
+            marginLeft="auto"
+            marginRight="auto"
+            marginTop="40px"
+            justifyContent="center"
+            display="flex"
+          />
+        ) : (
+          <TodoList />
+        )}
       </Box>
     </Center>
   )

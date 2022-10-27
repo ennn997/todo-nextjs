@@ -4,7 +4,7 @@ export default async function handler(req, res) {
   if (req.method === 'GET') {
     try {
       const todos = await prisma.todo.findMany()
-      return res.status(200).json(todos)
+      res.status(200).json(todos)
     } catch (error) {
       res.status(500).json({ error: 'Oh, something went wrong' })
     }
@@ -12,9 +12,11 @@ export default async function handler(req, res) {
     const { todoTask } = req.body
     try {
       const todo = await prisma.todo.create({ data: { todoTask: todoTask } })
-      return res.status(200).json(todo)
+      res.status(200).json(todo)
     } catch (error) {
       res.status(500).json({ error: 'Error' })
     }
+  } else {
+    res.status(404)
   }
 }
