@@ -4,8 +4,6 @@ import { HStack, Button, Text } from '@chakra-ui/react'
 
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
-import '@fontsource/roboto-slab'
-
 const Todo = (props) => {
   const queryClient = useQueryClient()
 

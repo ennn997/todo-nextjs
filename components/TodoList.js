@@ -31,7 +31,7 @@ const TodoList = () => {
       <OrderedList ml="20px" fontSize="17px">
         {todos.map((todo) => (
           <ListItem key={todo.id}>
-            <Todo id={todo.id} todoTask={todo.todoTask} />{' '}
+            <Todo id={todo.id} todoTask={todo.todoTask} />
           </ListItem>
         ))}
       </OrderedList>
